@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>エリア別ビジネス接続レコメンド</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background-color: #f7f7f7;
+      color: #222;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    select, button {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      margin-top: 8px;
+      background-color: #006d77;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #00545c;
+    }
+
+    .result {
+      margin-top: 24px;
+      padding: 16px;
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+
+    .result h2 {
+      margin-top: 0;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .top-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 16px;
+        align-items: stretch;
+    }
+
+    .top-grid .info-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        height: 100%;
+        min-height: 180px;
+        padding: 20px 18px;
+    }
+
+    .top-grid .info-card h3 {
+        margin: 0 0 14px 0;
+        font-size: 1.05rem;
+        line-height: 1.4;
+    }
+
+    .top-grid .info-card p,
+    .top-grid .info-card li {
+        margin: 0;
+        font-size: 0.98rem;
+        line-height: 1.7;
+        word-break: break-word;
+    }
+
+    .top-grid .info-card ul {
+        margin: 0;
+        padding-left: 1.2em;
+    }
+
+
+    @media (max-width: 900px) {
+        .top-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .top-grid .info-card {
+            min-height: 160px;
+        }
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 24px 0 12px;
+        color: #1f2937
+    }
+
+    .contorol-panel {
+        background: #ffffff;
+        border: 1px solid #dbe3ef;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 8px 24px rbga(15, 23, 42, 0.06);
+        margin-bottom: 24px;
+    }
+
+    .flow-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 28px;
+    }
+
+    .flow-card {
+        background: #f8fbff;
+        border: 1px solid #dbe3ef;
+        border-radius: 14px;
+        padding: 16px;
+    }
+
+    .flow-card span {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #0f766e;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .flow-card h4 {
+        margin: 8px 0 8px;
+        font-size: 1rem;
+    }
+
+    .flow-card p {
+        margin : 0;
+        font-size: 0.92rem;
+        color: #475569;
+    }
+
+    .info-card {
+        background: white;
+        border: 1px solid #dbe2ea;
+        border-radius: 10px;
+        padding: 16px;
+    }
+
+    .info-card h3 {
+        margin-top: 0;
+        margin-bottom: 12px;
+        font-size: 18px;
+    }
+
+    .highlight {
+        background: #e6f4f1;
+        border-left: 6px solid #006d77;
+        padding: 14px;
+        border-radius: 8px;
+        margin-top: 16px;
+    }
+
+    .comment-box {
+        background: #fff7e6;
+        border-left: 6px solid #f4a261;
+        padding: 14px;
+        border-radius: 8px;
+        margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>エリア別ビジネス接続レコメンド</h1>
+    <p>
+      区レベルのクラスタ分析結果をもとに、提案前のあたり付けを支援する簡易意思決定ツールです。
+      人口構成と産業構成からエリア特性を要約し、提案テーマ、想定顧客、次に見るべき追加データ候補を返します。
+    </p>
+
+    <div class="control-panel">
+      <label for="citySelect">都市を選択</label>
+      <select id="citySelect">
+        <option value="横浜市">横浜市</option>
+        <option value="千葉市">千葉市</option>
+        <option value="北九州市">北九州市</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="wardSelect">区を選択</label>
+      <select id="wardSelect"></select>
+    </div>
+
+    <button id="showButton">レコメンドを表示</button>
+
+    <div class="result" id="resultArea">
+      <h2>結果表示</h2>
+      <p>ここに結果が表示されます。</p>
+    </div>
+  </div>
+
+  <script>
+    const areaData = {
+      "横浜市": [
+        {
+          ward: "鶴見区",
+          cluster: "C: 工業・産業ミックス型",
+          summary: "工業・物流機能を含む産業ミックス型エリア。",
+          youthratio: 11.4,
+          workingratio: 67.1,
+          elderlyratio: 21.5,
+          secondaryratio: 26.1,
+          tertiaryratio: 73.8,
+          suggestions: [
+            "GX投資ターゲットの抽出",
+            "産業×人材ミスマッチ分析",
+            "物流・産業立地評価"
+          ]
+        },
+        {
+          ward: "神奈川区",
+          cluster: "A: 都市サービス型",
+          summary: "都心近接でサービス業集積が高いエリア。",
+          youthratio: 10.5,
+          workingratio: 67.7,
+          elderlyratio: 21.8,
+          secondaryratio: 12.9,
+          tertiaryratio: 87.0,
+          suggestions: [
+            "商業・サービス需要の可視化",
+            "再開発や新規出店の効果予測",
+            "人流・商圏分析との接続"
+          ]
+        },
+        {
+          ward: "西区",
+          cluster: "A: 都市サービス型",
+          summary: "都心中枢としてサービス業集積が高いエリア",
+          youthratio: 10.3,
+          workingratio: 70.3,
+          elderlyratio: 19.4,
+          secondaryratio: 6.8,
+          tertiaryratio: 93.1,
+          suggestions: [
+            "商業・サービス需要の可視化",
+            "再開発や新規出店の効果予測",
+            "人流・商圏分析との接続"
+          ]
+        },
+        {
+          ward: "都筑区",
+          cluster: "C: 工業・産業ミックス型",
+          summary: "新興住宅地と産業機能が混在するミックス型エリア",
+          youthratio: 13.4,
+          workingratio: 67.0,
+          elderlyratio: 19.5,
+          secondaryratio: 20.0,
+          tertiaryratio: 79.8,
+          suggestions: [
+            "新興住宅地と産業集積を踏まえた需要分析",
+            "人材需要・通勤流動の可視化",
+            "産業と居住の両立を意識した施策整理"
+          ]
+        },
+        {
+          ward: "中区",
+          cluster: "A: 都市サービス型",
+          summary: "歴史的中心市街地として都市サービス機能が集積したエリア。",
+          youthratio: 9.1,
+          workingratio: 67.2,
+          elderlyratio: 23.7,
+          secondaryratio: 6.2,
+          tertiaryratio: 93.7,
+          suggestions: [
+            "観光・商業を含む複合的な需要分析",
+            "中心市街地活性化施策の検討",
+            "再開発テーマの整理"
+          ]
+        },
+        {
+          ward: "南区",
+          cluster: "A: 都市サービス型",
+          summary: "都心近郊の住宅・サービス機能が重なるエリア",
+          youthratio: 9.0,
+          workingratio: 64.5,
+          elderlyratio: 26.5,
+          secondaryratio: 13.1,
+          tertiaryratio: 86.8,
+          suggestions: [
+            "生活サービス需要の可視化",
+            "高齢化を踏まえた生活支援策の検討",
+            "身近な商圏分析"
+          ]
+        },
+        {
+          ward: "保土ヶ谷区",
+          cluster: "B: 高齢住宅地型",
+          summary: "高齢化が進む住宅地として生活支援ニーズが大きいエリア",
+          youthratio: 10.2,
+          workingratio: 63.0,
+          elderlyratio: 26.7,
+          secondaryratio: 12.6,
+          tertiaryratio: 87.3,
+          suggestions: [
+            "医療・介護サービス需要の把握",
+            "交通・移動弱者対策の優先度整理",
+            "空き家活用・住宅地維持施策の検討"
+          ]
+        },
+        {
+          ward: "磯子区",
+          cluster: "B: 高齢住宅地型",
+          summary: "住宅地と沿岸部を含み、高齢化が進むエリア",
+          youthratio: 10.8,
+          workingratio: 61.1,
+          elderlyratio: 28.1,
+          secondaryratio: 24.2,
+          tertiaryratio: 75.6,
+          suggestions: [
+            "高齢支援サービス分析",
+            "地域交通・生活インフラの見直し",
+            "住宅地と工業地の共存を踏まえた施策整理"
+          ]
+        },
+        {
+          ward: "金沢区",
+          cluster: "B: 高齢住宅地型",
+          summary: "臨海部と住宅地を併せ持ち、高齢化が進むエリア",
+          youthratio: 10.0,
+          workingratio: 58.7,
+          elderlyratio: 31.3,
+          secondaryratio: 22.3,
+          tertiaryratio: 77.5,
+          suggestions: [
+            "高齢者向けサービスと臨海部機能を踏まえた施策検討",
+            "生活交通・買い物環境の維持",
+            "住宅・観光の両面からの需要整理"
+          ]
+        },
+        {
+          ward: "港北区",
+          cluster: "C: 工業・産業ミックス型",
+          summary: "交通結節点を中心に住宅・業務・産業が混在するエリア",
+          youthratio: 11.9,
+          workingratio: 68.0,
+          elderlyratio: 20.0,
+          secondaryratio: 15.9,
+          tertiaryratio: 84.0,
+          suggestions: [
+            "産業・オフィス集積と住宅のバランスを踏まえた需要分析",
+            "人材需要・通勤流動の可視化",
+            "再開発ポテンシャルの整理"
+          ]
+        },
+        {
+          ward: "戸塚区",
+          cluster: "B: 高齢住宅地型",
+          summary: "郊外住宅地として高齢化が進むエリア",
+          youthratio: 12.0,
+          workingratio: 61.8,
+          elderlyratio: 26.1,
+          secondaryratio: 14.6,
+          tertiaryratio: 85.2,
+          suggestions: [
+            "医療・介護・生活サービス需要の把握",
+            "郊外型住宅・移動支援の検討",
+            "住宅地維持・再編の優先度整理"
+          ]
+        },
+        {
+          ward: "港南区",
+          cluster: "B: 高齢住宅地型",
+          summary: "高齢化が進む住宅地として生活支援ニーズが大きいエリア",
+          youthratio: 10.6,
+          workingratio: 60.1,
+          elderlyratio: 29.3,
+          secondaryratio: 8.1,
+          tertiaryratio: 91.6,
+          suggestions: [
+            "医療・介護サービス需要の把握",
+            "移動弱者対策の優先度整理",
+            "近隣商圏・生活サービスの維持"
+          ]
+        },
+        {
+          ward: "旭区",
+          cluster: "B: 高齢住宅地型",
+          summary: "郊外住宅地で高齢化が進むエリア",
+          youthratio: 10.7,
+          workingratio: 59.5,
+          elderlyratio: 29.7,
+          secondaryratio: 12.4,
+          tertiaryratio: 87.4,
+          suggestions: [
+            "高齢者支援のエリア優先度整理",
+            "生活圏の維持・再編プランの検討",
+            "地域交通ネットワークの見直し"
+          ]
+        },
+        {
+          ward: "緑区",
+          cluster: "B: 高齢住宅地型",
+          summary: "住宅地としての性格が強く、高齢化が進むエリア",
+          youthratio: 11.8,
+          workingratio: 63.3,
+          elderlyratio: 24.9,
+          secondaryratio: 14.5,
+          tertiaryratio: 84.5,
+          suggestions: [
+            "住宅地としての生活支援ニーズ整理",
+            "子育て・高齢者施策のバランス検討",
+            "生活サービスの持続性分析"
+          ]
+        },
+        {
+          ward: "瀬谷区",
+          cluster: "B: 高齢住宅地型",
+          summary: "郊外住宅地として高齢化が進むエリア",
+          youthratio: 10.8,
+          workingratio: 61.1,
+          elderlyratio: 28.1,
+          secondaryratio: 13.9,
+          tertiaryratio: 85.9,
+          suggestions: [
+            "医療・介護・生活サービスのカバー状況把握",
+            "住宅地維持・再編方針の整理",
+            "地域交通・移動支援の検討"
+          ]
+        },
+        {
+          ward: "栄区",
+          cluster: "B: 高齢住宅地型",
+          summary: "高齢化が進む郊外住宅地エリア",
+          youthratio: 10.6,
+          workingratio: 58.6,
+          elderlyratio: 30.9,
+          secondaryratio: 18.1,
+          tertiaryratio: 81.5,
+          suggestions: [
+            "高齢者比率の高さを踏まえた施策優先度整理",
+            "生活インフラ。公共施設の維持策検討",
+            "医療・介護ネットワーク分析"
+          ]
+        },
+        {
+          ward: "泉区",
+          cluster: "B: 高齢住宅地型",
+          summary: "郊外住宅地として高齢化が進むエリア",
+          youthratio: 11.0,
+          workingratio: 59.9,
+          elderlyratio: 29.1,
+          secondaryratio: 14.1,
+          tertiaryratio: 85.6,
+          suggestions: [
+            "生活支援・福祉サービス需要の把握",
+            "郊外住宅地の持続性評価",
+            "交通・買い物環境の維持"
+          ]
+        },
+        {
+          ward: "青葉区",
+          cluster: "A: 都市サービス型",
+          summary: "都心近接の住宅・サービス機能が高い副都心エリア",
+          youthratio: 11.8,
+          workingratio: 64.5,
+          elderlyratio: 23.7,
+          secondaryratio: 6.9,
+          tertiaryratio: 92.8,
+          suggestions: [
+            "高所得・サービス需要を踏まえた商圏分析",
+            "副都心としての機能強化策の検討",
+            "子育て・教育サービスとの接続"
+          ]
+        },
+      ],
+      "千葉市": [
+        {
+          ward: "中央区",
+          cluster: "A: 都市サービス型",
+          summary: "都心機能とサービス業集積が強いエリア。",
+          youthratio: 11.6,
+          workingratio: 64.2,
+          elderlyratio: 24.2,
+          secondaryratio: 10.1,
+          tertiaryratio: 89.8,
+          suggestions: [
+            "商業・サービス需要の可視化",
+            "中心市街地活性化施策の検討",
+            "再開発候補の整理"
+          ]
+        },
+        {
+          ward: "若葉区",
+          cluster: "B: 高齢住宅地型",
+          summary: "高齢化が進み、生活支援需要が高い郊外住宅地エリア。",
+          youthratio: 10.9,
+          workingratio: 57.8,
+          elderlyratio: 31.3,
+          secondaryratio: 20.4,
+          tertiaryratio: 79.0,
+          suggestions: [
+            "医療・介護需要の把握",
+            "移動支援・買い物支援の検討",
+            "生活圏維持施策の整理"
+          ]
+        },
+        {
+          ward: "緑区",
+          cluster: "C: 工業・産業ミックス型",
+          summary: "若年層も一定数存在し、工業・住宅機能が混在するエリア。",
+          youthratio: 14.2,
+          workingratio: 62.5,
+          elderlyratio: 23.3,
+          secondaryratio: 14.8,
+          tertiaryratio: 84.6,
+          suggestions: [
+            "産業構造転換の仮説整理",
+            "人材需要との接続",
+            "郊外型産業支援の検討"
+          ]
+        },
+         {
+          ward: "花見川区",
+          cluster: "B: 高齢住宅地型",
+          summary: "高齢化が進む住宅地として生活支援ニーズが大きいエリア",
+          youthratio: 10.8,
+          workingratio: 60.7,
+          elderlyratio: 28.5,
+          secondaryratio: 19.1,
+          tertiaryratio: 80.6,
+          suggestions: [
+            "医療・介護サービス需要の把握",
+            "生活圏維持施策の整理",
+            "移動支援の優先度検討"
+          ]
+        },
+        {
+          ward: "稲毛区",
+          cluster: "A: 都市サービス型",
+          summary: "住宅地と都市サービス機能を併せ持つエリア",
+          youthratio: 12.2,
+          workingratio: 60.5,
+          elderlyratio: 27.4,
+          secondaryratio: 13.3,
+          tertiaryratio: 86.4,
+          suggestions: [
+            "生活サービス需要の可視化",
+            "教育・子育て需要との接続",
+            "身近な商圏分析"
+          ]
+        },
+         {
+          ward: "美浜区",
+          cluster: "A: 都市サービス型",
+          summary: "海浜部の都市機能とサービス業集積が目立つエリア",
+          youthratio: 12.3,
+          workingratio: 61.1,
+          elderlyratio: 26.6,
+          secondaryratio: 0.61,
+          tertiaryratio: 93.7,
+          suggestions: [
+            "商業・業務需要分析",
+            "海浜部再開発テーマの整理",
+            "都市サービス機能の高度化支援"
+          ]
+        }
+      ], 
+      "北九州市": [
+        {
+          ward: "小倉北区",
+          cluster: "A: 都市サービス型",
+          summary: "都市サービス機能が集積した中心エリア。",
+          youthratio: 11.7,
+          workingratio: 57.4,
+          elderlyratio: 30.8,
+          secondaryratio: 23.2,
+          tertiaryratio: 76.7,
+          suggestions: [
+            "商業・業務需要分析",
+            "中心市街地活性化の支援",
+            "再開発テーマの整理"
+          ]
+        },
+        {
+          ward: "門司区",
+          cluster: "B: 高齢住宅地型",
+          summary: "高齢化が進み、住宅地課題が大きいエリア。",
+          youthratio: 10.2,
+          workingratio: 53.9,
+          elderlyratio: 35.7,
+          secondaryratio: 20.4,
+          tertiaryratio: 79.5,
+          suggestions: [
+            "高齢者支援サービス分析",
+            "地域交通・生活インフラの見直し",
+            "住宅地維持施策の整理"
+          ]
+        },
+        {
+          ward: "若松区",
+          cluster: "C: 工業・産業ミックス型",
+          summary: "臨海工業地帯を含む工業・物流系エリア。",
+          youthratio: 11.7,
+          workingratio: 54.5,
+          elderlyratio: 33.7,
+          secondaryratio: 34.6,
+          tertiaryratio: 65.3,
+          suggestions: [
+            "GX・脱炭素関連提案",
+            "工業・物流拠点分析",
+            "産業支援施策の優先度整理"
+          ]
+        },
+        {
+          ward: "戸畑区",
+          cluster: "C: 工業・産業ミックス型",
+          summary: "臨海部の産業集積と高齢化が重なるエリア",
+          youthratio: 9.9,
+          workingratio: 52.3,
+          elderlyratio: 37.7,
+          secondaryratio: 20.5,
+          tertiaryratio: 79.4,
+          suggestions: [
+            "産業転換・GX支援の検討",
+            "工業地帯周辺の生活支援施策整理",
+            "物流・産業基盤の評価"
+          ]
+        },
+        {
+          ward: "小倉南区",
+          cluster: "A: 都市サービス型",
+          summary: "住宅地と都市サービスが重なる広域エリア",
+          youthratio: 10.2,
+          workingratio: 60.3,
+          elderlyratio: 29.4,
+          secondaryratio: 11.6,
+          tertiaryratio: 88.3,
+          suggestions: [
+            "生活サービス需要の可視化",
+            "都市近郊住宅地の需要分析",
+            "商圏・移動圏の整理"
+          ]
+        },
+        {
+          ward: "八幡東区",
+          cluster: "B: 高齢住宅地型",
+          summary: "高齢化が進む住宅地・旧工業地周辺エリア",
+          youthratio: 12.1,
+          workingratio: 58.2,
+          elderlyratio: 29.6,
+          secondaryratio: 19.6,
+          tertiaryratio: 80.3,
+          suggestions: [
+            "高齢者支援施策の優先度整理",
+            "生活インフラ維持政策の検討",
+            "地域再編テーマの整理"
+          ]
+        },
+        {
+          ward: "八幡西区",
+          cluster: "A: 都市サービス型",
+          summary: "住宅・商業・業務機能が広く分布するエリア",
+          youthratio: 10.7,
+          workingratio: 56.8,
+          elderlyratio: 32.3,
+          secondaryratio: 28.8,
+          tertiaryratio: 71.1,
+          suggestions: [
+            "商業・生活サービス需要の分析",
+            "地域拠点機能の再整理",
+            "高齢化を踏まえた複合施策の検討"
+          ]
+        }
+      ]
+    };
+
+    const citySelect = document.getElementById("citySelect");
+    const wardSelect = document.getElementById("wardSelect");
+    const showButton = document.getElementById("showButton");
+    const resultArea = document.getElementById("resultArea");
+
+    function updateWardOptions() {
+      const selectedCity = citySelect.value;
+      const wards = areaData[selectedCity];
+
+      wardSelect.innerHTML = "";
+
+      wards.forEach((item, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = item.ward;
+        wardSelect.appendChild(option);
+      });
+    }
+
+    function getDiagnosticComment(data) {
+        let comment = "";
+
+        if (data.cluster.includes("都市サービス型")) {
+            comment = "第三次産業比率が高く、都心・副都心機能や商業・サービス需要との接続がしやすいエリアです。";
+
+            if (data.tertiaryratio >= 90) {
+                comment += " 特にサービス業集積が非常に高く、再開発、商圏分析、新規出店検討との相性が強いと考えられます。";
+            } else if (data.workingratio >= 65) {
+                comment += " 生産年齢人口比も高めで、業務機能や通勤流動を踏まえた需要分析にも向いています。";
+            }
+        }
+
+        else if (data.cluster.includes("高齢住宅地型")) {
+            comment = "老年人口比が高く、郊外住宅地として生活支援・医療介護・地域交通の検討余地が大きいエリアです。";
+
+            if (data.elderlyratio >= 30) {
+                comment += " 高齢化がかなり進んでおり、移動支援、買い物支援、医療介護需要の把握を優先しやすいと考えられます。";
+            } else if (data.tertiaryratio >= 85){
+                comment += " 一方で第三次産業比率も一程度高く、生活サービス維持の観点から商圏分析と組み合わせる余地があります。";
+            }
+        }
+
+        else if (data.cluster.includes("工業・産業ミックス型")) {
+            comment = "第二次産業比率が比較的高く、工業・物流・住宅地機能が重なる産業ミックス型エリアです。";
+
+            if (data.secondaryratio >= 25) {
+                comment += " 特に産業集積の色が強く、GX、物流、産業高度化、人材需給分析との接続が有力です。";
+            } else if (data.youthratio >= 13) {
+                comment += "若年人口比も比較的高く、新興住宅地や成長エリアとしての需要も併せて捉える必要があります。";
+            }
+        }
+
+        else {
+            comment = "人口構成と産業構成のバランスを踏まえて、複合的な提案を検討できるエリアです。";
+        }
+
+        return comment;
+    }
+    
+    <!--有望テーマ-->
+    function getSuggestions(data) {
+      if (data.suggestions && data.suggestions.length > 0) {
+        return data.suggestions;
+      }
+
+      let suggestions = [];
+
+        if (data.cluster.includes("都市サービス型")) {
+            suggestions = [
+                "商業・サービス需要の可視化",
+                "再開発・新規店舗出店候補地の優先度分析",
+                "人流・商圏データを組み合わせた需要推定"
+            ];
+        }
+
+        else if (data.cluster.includes("高齢住宅地型")) {
+            suggestions = [
+                "医療・介護需要の把握",
+                "移動支援・買い物支援の優先度分析",
+                "空き家活用・住宅地維持施策の整理"
+            ];
+        }
+
+        else if (data.cluster.includes("工業・産業ミックス型")) {
+            suggestions = [
+                "GX投資ターゲットの候補の抽出",
+                "物流・産業拠点の立地評価",
+                "産業×人材需給ミスマッチの可視化"
+            ];
+        }
+
+        else {
+            suggestions = [
+                "地域課題の仮設整理",
+                "人口構成と産業構成を踏まえた基礎分析",
+            ];
+        }
+
+        return suggestions;
+    }
+
+    
+    
+    //想定顧客
+    function getCustomer(data) {
+        let customers = [];
+
+        if (data.cluster.includes("都市サービス型")) {
+            customers = [
+                "自治体の都市政策・再開発部門",
+                "商業施設ディベロッパー・小売事業者",
+                "商圏分析を行う事業企画部門"
+            ];
+        } else if (data.cluster.includes("高齢住宅地型")) {
+            customers = [
+                "自治体の都市政策・再開発部門",
+                "医療・介護・生活支援サービス事業者",
+                "住宅地維持や空き家対策を担う地域政策部門"
+            ];
+        } else if (data.cluster.includes("工業・産業ミックス型")) {
+            customers = [
+                "自治体の産業振興・GX推進部門",
+                "物流・製造関連企業の事業開発部門",
+                "雇用・産業構造転換を扱う支援機関"
+            ];
+        } else {
+            customers = [
+                "地域調査を行う企画部門",
+                "エリア戦略を考える事業企画担当"
+            ];
+        }
+
+        return customers;
+    }
+
+    // 追加データ候補
+    function getAdditionalData(data) {
+        let items = [];
+
+        if (data.cluster.includes("都市サービス型")) {
+            items =[
+                "人流データ",
+                "昼夜間人口",
+                "商圏・消費データ"
+            ];
+        } else if (data.cluster.includes("高齢住宅地型")) {
+            items = [
+                "高齢者人口の将来推計",
+                "交通空白地データ(駅から半径500m〜1000m、バス停から半径300m〜500m以上に住宅が点在する地域を指す)",
+                "医療・介護施設分布"
+            ];
+        } else if (data.cluster.includes("工業・産業ミックス型")) {
+            items = [
+                "工業統計・事業所データ",
+                "物流拠点・交通アクセス",
+                "雇用・通勤流動データ"
+            ];
+        } else {
+            items = [
+                "人口推計",
+                "事業所統計"
+            ];
+        }
+
+        return items;
+    }
+
+    // プレゼンでの見せ方
+    function getPitchPoint(data) {
+        if (data.cluster.includes("都市サービス型")) {
+            return "商業・サービス需要が高いエリアとして、再開発や出店余地を定量的に示す。";
+        } else if (data.cluster.includes("高齢住宅地型")) {
+            return "高齢化と生活支援需要を軸に、地域交通・医療介護施策の必要性を示す。";
+        } else if (data.cluster.includes("工業・産業ミックス型")) {
+            return "産業集積と雇用・物流の観点から、GXや産業高度化の提案予知を示す。";
+        } else {
+            return "人口構成と産業構成の特徴から、基礎的な地域課題を整理して示す。"
+        }
+    }
+
+    // 需要タイプ
+    function getDemandType(data) {
+        if (data.cluster.includes("都市サービス型")) {
+            return "都市サービス・商業需要型";
+        } else if (data.cluster.includes("高齢住宅地型")) {
+            return "生活支援・高齢者サービス需要型";
+        } else if (data.cluster.includes("工業・産業ミックス型")) {
+            return "産業集積・GX転換需要型";
+        } else {
+            return "複合需要型";
+        }
+    }
+
+    // 提案難易度
+    function getProposalDifficulty(data) {
+        if (data.cluster.includes("都市サービス型")) {
+            return "中";
+        } else if (data.cluster.includes("高齢住宅地型")) {
+            return "中～高";
+        } else if (data.cluster.includes("工業・産業ミックス型")) {
+            return "高";
+        } else {
+            return "中";
+        }
+    }
+
+    // 優先度の軸
+    function getPriorityAxis(data) {
+        if (data.cluster.includes("都市サービス型")) {
+            return "サービス需要の大きさ、再開発余地、商圏ポテンシャル";
+        } else if (data.cluster.includes("高齢住宅地型")) {
+            return "高齢化率、生活支援需要、移動・交通課題の大きさ";
+        } else if (data.cluster.includes("工業・産業ミックス型")) {
+            return "第二次産業比率、産業集積、GX・物流転換余地";
+        } else {
+            return "人口構成と産業構成のバランス";
+        }
+    }
+
+    // 地域課題
+    function getRegionalIssues(data) {
+        let issues = [];
+
+        if (data.cluster.includes("都市サービス型")) {
+            issues = [
+                "都心・副都心への集積機能を踏まえた需要把握",
+                "再開発・新規出店余地の見極め",
+                "人流や証券競争を踏まえたサービス供給最適化"
+            ];
+        } else if (data.cluster.includes("高齢住宅地型")) {
+            issues = [
+                "高齢化進行に伴う医療、介護、生活支援需要への対応",
+                "移動弱者や地域交通の維持",
+                "空き家活用や住宅地の持続性確保"
+            ];
+        } else if (data.cluster.includes("工業・産業ミックス型")) {
+            issues = [
+                "産業構造転換とGX投資の方向性整理",
+                "物流・製造拠点としての機能強化",
+                "産業人材の需給ミスマッチへの対応"
+            ];
+        } else {
+            issues = [
+                "地域特性に応じた課題の整理",
+                "人口構成と産業構成を踏まえた基礎分析"
+            ];
+        }
+
+         return issues;
+    }
+
+   
+
+    function showRecommendation() {
+      const selectedCity = citySelect.value;
+      const selectedIndex = wardSelect.value;
+      const data = areaData[selectedCity][selectedIndex];
+      
+      const diagnosticComment = getDiagnosticComment(data);
+      const customers =getCustomer(data);
+      const suggestions = getSuggestions(data);
+      const additionalData = getAdditionalData(data);
+      const pitchPoint = getPitchPoint(data);
+
+      const demandType = getDemandType(data);
+      const proposalDifficulty = getProposalDifficulty(data);
+      const priorityAxis = getPriorityAxis(data);
+      const regionalIssues = getRegionalIssues(data);
+
+      
+      
+      const customersHtml = customers.map(item => `<li>${item}</li>`).join("");
+      const suggestionsHtml = suggestions.map(item => `<li>${item}</li>`).join("");
+      const additionalDataHtml = additionalData.map(item => `<li>${item}</li>`).join("");
+      const regionalIssuesHtml = regionalIssues.map(item => `<li>${item}</li>`).join("");
+
+     
+     
+
+      resultArea.innerHTML = `
+  <h2>${selectedCity} ${data.ward}</h2>
+
+  <h3 class="section-title">診断サマリー</h3>
+
+  <div class="highlight">
+    <p><strong>クラスタ:</strong> ${data.cluster}</p>
+    <p><strong>エリア要約:</strong> ${data.summary}</p>
+  </div>
+
+  <div class="top-grid">
+    <div class="info-card">
+        <h3>需要タイプ</h3>
+        <p>${demandType}</p>
+    </div>
+    <div class="info-card">
+        <h3>提案難易度</h3>
+        <p>${proposalDifficulty}</p>
+    </div>
+    <div class="info-card">
+        <h3>優先度の軸</h3>
+        <p>${priorityAxis}</p>
+    </div>
+    <div clas="info-card">
+        <h3>タイプ判定</h3>
+        <p>${data.cluster}</p>
+    </div>                
+   </div>
+
+
+  <div class="info-grid" style="margin-top: 16px;">
+    <div class="info-card">
+      <h3>人口構成</h3>
+      <ul>
+        <li>年少人口比: ${data.youthratio}%</li>
+        <li>生産年齢人口比: ${data.workingratio}%</li>
+        <li>老年人口比: ${data.elderlyratio}%</li>
+      </ul>
+    </div>
+
+    <div class="info-card">
+      <h3>産業構成</h3>
+      <ul>
+        <li>第二次産業比: ${data.secondaryratio}%</li>
+        <li>第三次産業比: ${data.tertiaryratio}%</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="comment-box">
+    <h3>分析コメント</h3>
+    <p>${diagnosticComment}</p>
+  </div>
+
+  <h3 class="section-title">提案内容</h3>
+
+  <div class="info-card">
+    <h3>地域課題</h3>
+    <ul>${regionalIssuesHtml}</ul>
+  </div>  
+
+  <div class="info-card">
+    <h3>想定顧客</h3>
+    <ul>${customersHtml}</ul>
+  </div>
+
+  <div class="info-card">
+    <h3>有望テーマ</h3>
+    <ul>${suggestionsHtml}</ul>
+  </div>
+
+  <div class="info-card" style="margin-top: 16px;">
+    <h3>追加データ候補</h3>
+    <ul>${additionalDataHtml}</ul>
+  </div>
+
+  <div class="info-card" style="margin-top: 16px;">
+    <h3>プレゼンでの見せ方</h3>
+    <ul>${pitchPoint}</ul>
+  </div>
+
+  <div class="flow-grid">
+    <div class="flow-card">
+        <span>Data</span>
+        <h4>データ分析</h4>
+        <p>市比較とクラスタリングで、エリア差を定量化</p>
+    </div>
+    <div class="flow-card">
+        <span>Hypothesis</span>
+        <h4>仮説形成</h4>
+        <p>タイプ別に地域課題とビジネス機会を整理</p>
+    </div>
+    <div class="flow-card">
+        <span>Organize</span>
+        <h4>整理</h4>
+        <p>提案前のあたり付けに使える論点に落とし込む</p>
+    </div>
+    <div class="flow-card">
+        <span>Implement</span>
+        <h4>実装</h4>
+        <p>ブラウザで動く施策ツールとして成果物化</p>
+    </div>
+`;
+     }
+
+    citySelect.addEventListener("change", updateWardOptions);
+    showButton.addEventListener("click", showRecommendation);
+
+    updateWardOptions();
+  </script>
+</body>
+</html>
